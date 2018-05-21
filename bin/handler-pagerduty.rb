@@ -74,6 +74,10 @@ class PagerdutyHandler < Sensu::Handler
     @contexts ||= @event['check']['pagerduty_contexts'] || []
   end
 
+  def details
+    @details ||= @event['check']['output'] || []
+  end
+
   def description_prefix
     @description_prefix = if @event['client'].key?(settings[json_config]['dynamic_description_prefix_key'])
                             "(#{@event['client'][settings[json_config]['dynamic_description_prefix_key']]})"
@@ -108,7 +112,7 @@ class PagerdutyHandler < Sensu::Handler
           when 'create', 'flapping'
             pagerduty.trigger([description_prefix, event_summary].compact.join(' '),
                               incident_key: [incident_key_prefix, incident_key].compact.join(''),
-                              details: @event,
+                              details: details,
                               contexts: contexts)
           when 'resolve'
             pagerduty.get_incident([incident_key_prefix, incident_key].compact.join('')).resolve(
